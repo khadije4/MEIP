@@ -1,5 +1,7 @@
 import type { Recommendation } from "../../types/economic";
 import { Badge, useCopy } from "../DataDisplay";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { indicatorLabel } from "../../utils/indicatorLabels";
 
 const stages = [
   ["immediate", "Immédiat", "فوري", "0–3 mois", "0–3 أشهر"],
@@ -27,6 +29,7 @@ const labels: Record<string, [string, string]> = {
 
 function RecommendationCard({ item }: { item: Recommendation }) {
   const c = useCopy();
+  const {language}=useLanguage();
   const local = (value: string) =>
     labels[value] ? c(labels[value][0], labels[value][1]) : value;
   return (
@@ -67,6 +70,7 @@ function RecommendationCard({ item }: { item: Recommendation }) {
           </div>
         ))}
       </div>
+      <div className="mt-3 text-xs"><strong>{c("Indicateurs de suivi : ","مؤشرات المتابعة: ")}</strong>{item.monitoring_indicators.slice(0,2).map(code=>indicatorLabel(code,language)).join(" · ")}</div>
       <details className="mt-3 rounded-xl bg-slate-50 p-3 text-xs">
         <summary className="cursor-pointer font-bold text-mauritania-800">
           {c("Pourquoi cette recommandation ?", "لماذا هذه التوصية؟")}

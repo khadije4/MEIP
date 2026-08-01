@@ -1,6 +1,82 @@
-import { useLanguage } from '../../contexts/LanguageContext'
-import type { MiningKey } from '../../utils/latestYearSimulation'
-import { useCopy } from '../DataDisplay'
+import { useLanguage } from "../../contexts/LanguageContext";
+import type { MiningKey } from "../../utils/latestYearSimulation";
+import { useCopy } from "../DataDisplay";
 
-const definitions:Array<{key:MiningKey;fr:string;ar:string}>=[{key:'snim_iron',fr:'Fer (SNIM)',ar:'الحديد (سنيم)'},{key:'gold_copper',fr:'Or & Cuivre',ar:'الذهب والنحاس'},{key:'oil_gas_extraction',fr:'Pétrole & Gaz',ar:'النفط والغاز'}]
-export function MiningShockCard({values,rates,onRate}:{values:Record<MiningKey,number|null>;rates:Record<MiningKey,number>;onRate:(key:MiningKey,value:number)=>void}){const c=useCopy();const {language}=useLanguage();const nf=new Intl.NumberFormat(language==='ar'?'ar-MR':'fr-MR',{maximumFractionDigits:2});return <section className="rounded-3xl border border-orange-200 bg-white p-5 shadow-card sm:p-6"><div className="mb-5"><p className="text-xs font-black uppercase tracking-widest text-orange-700">{c('Vulnérabilité','الهشاشة')}</p><h2 className="mt-1 text-xl font-black">{c('Chocs sur l’extraction minière','صدمات القطاع الاستخراجي')}</h2></div><div className="grid gap-6">{definitions.map(item=>{const unavailable=values[item.key]==null,value=Math.round(rates[item.key]*100);return <label className={`grid gap-2 ${unavailable?'opacity-55':''}`} key={item.key}><span className="flex items-center justify-between gap-3 text-sm font-bold"><span>{c(item.fr,item.ar)}</span><output htmlFor={`mining-${item.key}`} className={`rounded-full px-2.5 py-1 tabular-nums ${value<0?'bg-red-50 text-red-700':value>0?'bg-emerald-50 text-emerald-700':'bg-slate-100'}`}>{value>0?'+':''}{value}%</output></span><input id={`mining-${item.key}`} data-testid={`mining-${item.key}`} disabled={unavailable} type="range" min="-80" max="50" step="1" value={value} onChange={event=>onRate(item.key,+event.target.value/100)} aria-valuetext={c(`${value} pour cent`,`نسبة ${value} بالمئة`)} className="h-11 w-full accent-orange-600 outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed"/>{unavailable?<span className="text-xs font-semibold text-red-700">{c('Donnée indisponible','البيانات غير متاحة')}</span>:<span className="text-xs text-slate-500">{c('Base','الأساس')}: {nf.format(values[item.key]!)} {c('millions MRU','مليون أوقية')}</span>}</label>})}</div></section>}
+const definitions: Array<{ key: MiningKey; fr: string; ar: string }> = [
+  { key: "snim_iron", fr: "Fer (SNIM)", ar: "الحديد (سنيم)" },
+  { key: "gold_copper", fr: "Or & Cuivre", ar: "الذهب والنحاس" },
+  { key: "oil_gas_extraction", fr: "Pétrole & Gaz", ar: "النفط والغاز" },
+];
+export function MiningShockCard({
+  values,
+  rates,
+  onRate,
+}: {
+  values: Record<MiningKey, number | null>;
+  rates: Record<MiningKey, number>;
+  onRate: (key: MiningKey, value: number) => void;
+}) {
+  const c = useCopy();
+  const { language } = useLanguage();
+  const nf = new Intl.NumberFormat(language === "ar" ? "ar-MR" : "fr-MR", {
+    maximumFractionDigits: 2,
+  });
+  return (
+    <section className="rounded-3xl border border-orange-200 bg-white p-5 shadow-card sm:p-6">
+      <div className="mb-5">
+        <p className="text-xs font-black uppercase tracking-widest text-orange-700">
+          {c("Vulnérabilité", "الهشاشة")}
+        </p>
+        <h2 className="mt-1 text-xl font-black">
+          {c("Chocs sur l’extraction minière", "صدمات القطاع الاستخراجي")}
+        </h2>
+      </div>
+      <div className="grid gap-6">
+        {definitions.map((item) => {
+          const unavailable = values[item.key] == null,
+            value = rates[item.key];
+          return (
+            <label
+              className={`grid gap-2 ${unavailable ? "opacity-55" : ""}`}
+              key={item.key}
+            >
+              <span className="flex items-center justify-between gap-3 text-sm font-bold">
+                <span>{c(item.fr, item.ar)}</span>
+                <output
+                  htmlFor={`mining-${item.key}`}
+                  className={`rounded-full px-2.5 py-1 tabular-nums ${value < 0 ? "bg-red-50 text-red-700" : value > 0 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100"}`}
+                >
+                  {value > 0 ? "+" : ""}
+                  {value}%
+                </output>
+              </span>
+              <input
+                id={`mining-${item.key}`}
+                data-testid={`mining-${item.key}`}
+                disabled={unavailable}
+                type="range"
+                min="-80"
+                max="50"
+                step="1"
+                value={value}
+                onChange={(event) => onRate(item.key, +event.target.value)}
+                aria-valuetext={c(`${value} pour cent`, `نسبة ${value} بالمئة`)}
+                className="h-11 w-full accent-orange-600 outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+              />
+              {unavailable ? (
+                <span className="text-xs font-semibold text-red-700">
+                  {c("Donnée indisponible", "البيانات غير متاحة")}
+                </span>
+              ) : (
+                <span className="text-xs text-slate-500">
+                  {c("Base", "الأساس")}: {nf.format(values[item.key]!)}{" "}
+                  {c("millions MRU", "مليون أوقية")}
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
