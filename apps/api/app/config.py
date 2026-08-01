@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     database_url: str = f"sqlite:///{(API_DIR / 'var' / 'meip.db').as_posix()}"
 
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    frontend_url: str = "http://localhost:5173"
 
     upload_dir: str = str(API_DIR / "var" / "uploads")
     max_upload_mb: int = 20
@@ -32,7 +32,8 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        """Allowed browser origins from FRONTEND_URL (comma-separated)."""
+        return [origin.strip().rstrip("/") for origin in self.frontend_url.split(",") if origin.strip()]
 
 
 @lru_cache

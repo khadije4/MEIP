@@ -1,6 +1,5 @@
-from io import BytesIO
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.report import ReportRequest
@@ -19,4 +18,6 @@ def generate(body: ReportRequest, db: Session = Depends(get_db)):
     payload = generate_csv(name, series, indicator.unit, "ANSADE/CN") if body.format == "csv" else generate_pdf(name, series, indicator.unit, "ANSADE/CN", body.language, indicator.source_side, body.include_forecast)
     media = "text/csv; charset=utf-8" if body.format == "csv" else "application/pdf"
     filename = f"meip_{body.indicator_code}_{min(series)}_{max(series)}.{body.format}"
-    return StreamingResponse(BytesIO(payload), media_type=media, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+    # The complete report is generated in memory and returned directly. No
+    # permanent or ephemeral server-side report file is required.
+    return Response(content=payload, media_type=media, headers={"Content-Disposition": f'attachment; filename="{filename}"'})

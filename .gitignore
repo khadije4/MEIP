@@ -28,6 +28,8 @@ Thumbs.db
 # Data (raw source files may be large / sensitive; keep folder, ignore contents)
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/comptes_nationaux_4.9.1.xlsx
+!data/raw/comptes_nationaux_4.9.2.xlsx
 data/processed/*
 !data/processed/.gitkeep
 

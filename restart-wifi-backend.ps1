@@ -9,7 +9,7 @@ $configuration = Get-NetIPConfiguration | Where-Object {
 } | Select-Object -First 1
 if (-not $configuration) { throw 'No active IPv4 network with a default gateway was found.' }
 $wifiAddress = $configuration.IPv4Address.IPAddress
-$env:CORS_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://${wifiAddress}:5173"
+$env:FRONTEND_URL = "http://localhost:5173,http://127.0.0.1:5173,http://${wifiAddress}:5173"
 $python = Join-Path $PSScriptRoot 'apps\api\.venv\Scripts\python.exe'
 $apiDirectory = Join-Path $PSScriptRoot 'apps\api'
 Start-Process -FilePath $python -ArgumentList '-m','uvicorn','app.main:app','--host','0.0.0.0','--port','8000' -WorkingDirectory $apiDirectory -WindowStyle Hidden

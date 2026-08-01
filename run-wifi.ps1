@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $WebDirectory 'node_modules') -PathT
     throw 'Frontend dependencies are missing. Run npm install in apps\web.'
 }
 
-$env:CORS_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,http://${WifiAddress}:5173"
+$env:FRONTEND_URL = "http://localhost:5173,http://127.0.0.1:5173,http://${WifiAddress}:5173"
 $api = Start-Process -FilePath $ApiPython -ArgumentList '-m','uvicorn','app.main:app','--host','0.0.0.0','--port','8000' -WorkingDirectory $ApiDirectory -WindowStyle Hidden -PassThru
 
 $env:VITE_API_BASE_URL = "http://${WifiAddress}:8000"
