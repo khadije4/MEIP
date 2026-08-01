@@ -18,6 +18,12 @@ class RecommendationGenerateRequest(BaseModel):
     budget_level: str | None = None
     implementation_horizon: str | None = None
 
+class SupportingMetric(BaseModel):
+    label_fr: str
+    label_ar: str
+    value: float
+    unit: str
+
 class RecommendationItem(BaseModel):
     code: str
     title_fr: str
@@ -29,11 +35,18 @@ class RecommendationItem(BaseModel):
     sector_codes: list[str]
     reason_fr: str
     reason_ar: str
-    supporting_metrics: list[str]
+    supporting_metrics: list[SupportingMetric]
+    responsible_actor_categories: list[str]
+    implementation_steps_fr: list[str]
+    implementation_steps_ar: list[str]
     monitoring_indicators: list[str]
+    escalation_trigger_fr: str
+    escalation_trigger_ar: str
     expected_objective_fr: str
     expected_objective_ar: str
     confidence: Literal["low", "moderate", "high"]
+    confidence_reason_fr: str
+    confidence_reason_ar: str
     limitations_fr: str
     limitations_ar: str
 
@@ -71,4 +84,3 @@ class CatalogueEntry(BaseModel):
     sector_code: str
     recommendations: list[RecommendationItem]
     monitoring_indicators: list[str]
-

@@ -7,5 +7,5 @@ import { AlertsPage, AssistantPage, CataloguePage, ForecastPage, ReportsPage } f
 import { SimulationAndReactionPage } from './pages/SimulationAndReactionPage'
 
 const pages = {overview:<OverviewPage/>,activity:<ActivityPage/>,mining:<MiningPage/>,expenditure:<ExpenditurePage/>,compare:<ComparePage/>,reconciliation:<ReconciliationPage/>,alerts:<AlertsPage/>,forecast:<ForecastPage/>,assistant:<AssistantPage/>,stress:<SimulationAndReactionPage/>,reports:<ReportsPage/>,catalogue:<CataloguePage/>}
-const router = createBrowserRouter([{ path: '/', element: <Layout/>, errorElement: <NotFound/>, children: [{ index: true, element: <Home/> }, ...Object.entries(pages).map(([path,element]) => ({ path, element })), { path: '*', element: <NotFound/> }] }])
+const router = createBrowserRouter([{ path: '/', element: <Layout/>, errorElement: <NotFound/>, children: [{ index: true, element: <Home/> }, ...Object.entries(pages).map(([path,element]) => ({ path, element })), {path:'simulate',element:<SimulationAndReactionPage/>},{path:'dashboard',element:<OverviewPage/>},{path:'explore',element:<ActivityPage/>}, { path: '*', element: <NotFound/> }] }])
 export function App() { return <RouterProvider router={router}/> }

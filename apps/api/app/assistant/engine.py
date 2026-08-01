@@ -12,6 +12,7 @@ from app.analytics.ratios import investment_rate, trade_balance
 from app.models.dataset import Dataset
 from app.schemas.assistant import AssistantAnswer, EvidenceValue
 from app.services.series import get_indicator_or_404, get_ok_series
+from app.services import recommendations
 
 
 def _norm(text: str) -> str:
@@ -26,6 +27,7 @@ def _language(question: str, requested: str | None) -> str:
 
 
 ALIASES = {
+    "secondary_sector": ["secteur secondaire", "القطاع الثانوي"],
     "fishing": ["peche", "الصيد"],
     "extractive_activities": ["activites extractives", "extractives", "الاستخراج", "الاستخراجية"],
     "gold_copper": ["or et le cuivre", "or et cuivre", "الذهب والنحاس"],
@@ -50,6 +52,23 @@ def answer_question(db: Session, question: str, requested_language: str | None =
     def response(intent: str, answer_fr: str, answer_ar: str, evidence: list[EvidenceValue], calculation: str, warnings: list[str] | None = None):
         return AssistantAnswer(language=language, intent=intent, answer=answer_ar if language == "ar" else answer_fr,
             values_used=evidence, calculation=calculation, warnings=warnings or [])
+
+    if ("secteur secondaire" in q or "القطاع الثانوي" in q) and any(term in q for term in ("arrete", "arrêt", "faire", "توقف", "نفعل")):
+        plan = recommendations.generate(db, year, [{"indicator_code": "secondary_sector", "shock_rate": 1.0}], "one_year")
+        stress = plan["stress_test"]
+        evidence = [_evidence(db, "secondary_sector", year, stress["individual_effects"][0]["sector_value"], language),
+                    _evidence(db, "gdp_activity_market_prices", year, stress["baseline_activity_gdp"], language)]
+        answer_fr = (f"Scénario : arrêt complet du secteur secondaire en {year}. Impact comptable calculé : "
+            f"{stress['total_direct_gdp_impact_pct']:.2f} % du PIB d’activité. Les vulnérabilités principales concernent la continuité des infrastructures, les intrants et la concentration productive. "
+            "Les options de réponse sont organisées en quatre horizons distincts ci-dessous. À suivre : production secondaire et PIB par activité. "
+            "Limites : les données nationales observées ne comprennent pas l’emploi, les entreprises ni le coût budgétaire; les impacts sont calculés et les actions sont fondées sur des règles.")
+        answer_ar = (f"السيناريو: توقف كامل للقطاع الثانوي سنة {year}. الأثر المحاسبي المحسوب: "
+            f"{stress['total_direct_gdp_impact_pct']:.2f}٪ من ناتج الأنشطة. ترتبط مواطن الهشاشة باستمرارية البنية التحتية والمدخلات والتركيز الإنتاجي. "
+            "تُنظم خيارات الاستجابة ضمن أربعة آفاق مختلفة أدناه. المتابعة: إنتاج القطاع الثانوي والناتج حسب الأنشطة. "
+            "الحدود: لا تتضمن البيانات الوطنية المرصودة التشغيل أو بيانات المؤسسات أو التكلفة المالية؛ الأثر محسوب والخيارات قائمة على قواعد.")
+        return AssistantAnswer(language=language, intent="secondary_sector_response", answer=answer_ar if language == "ar" else answer_fr,
+            values_used=evidence, calculation="direct_loss = secondary_sector × 100%; impact = direct_loss / GDP × 100",
+            warnings=[recommendations.DISCLAIMER_AR if language == "ar" else recommendations.DISCLAIMER_FR], recommendation_plan=plan)
 
     if ("solde commercial" in q or "الميزان التجاري" in q):
         ex, im = get_ok_series(db, "exports"), get_ok_series(db, "imports")

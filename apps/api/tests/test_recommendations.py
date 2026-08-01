@@ -39,3 +39,39 @@ def test_catalogue_monitoring_and_no_unsupported_numeric_claims(recommendation_c
     prose=" ".join(r["description_fr"]+" "+r["description_ar"] for r in sector["recommendations"])
     assert not re.search(r"\b\d+(?:[.,]\d+)?\s*(?:MRU|emplois?|millions?|milliards?)\b",prose,re.I)
 
+
+def test_secondary_critical_plan_has_distinct_horizons_evidence_and_priorities(recommendation_client):
+    response = recommendation_client.post("/api/recommendations/generate", json={"year": 2024, "shocks": [{"indicator_code": "secondary_sector", "shock_rate": 1}], "shock_duration": "one_year"})
+    assert response.status_code == 200, response.text
+    body = response.json(); items = body["recommendations"]
+    assert body["risk_level"] == "critical"
+    assert {item["time_horizon"] for item in items} == {"immediate", "stabilization", "recovery", "structural"}
+    assert len({item["code"] for item in items}) == len(items)
+    assert len({item["title_fr"] for item in items}) == len(items)
+    assert next(item for item in items if item["time_horizon"] == "immediate")["code"] != next(item for item in items if item["time_horizon"] == "structural")["code"]
+    assert len({item["priority"] for item in items}) > 1
+    assert all(item["confidence_reason_fr"] and item["confidence_reason_ar"] for item in items)
+    assert all(item["supporting_metrics"] for item in items)
+    assert all(len([x for x in items if x["time_horizon"] == horizon]) <= 2 for horizon in ("immediate", "stabilization", "recovery", "structural"))
+
+
+def test_sector_catalogue_precedes_fallback():
+    from app.services.recommendations import catalogue_for
+    specific = catalogue_for("secondary_sector")
+    fallback = catalogue_for("unknown_sector", fallback=True)
+    assert all(item["code"].startswith("secondary_sector_") for item in specific)
+    assert all(item["code"].startswith("fallback_") for item in fallback)
+    assert catalogue_for("unknown_sector") == []
+
+
+@pytest.mark.parametrize("language,question,expected", [
+    ("fr", "Que faire si le secteur secondaire s’arrête ?", "Scénario"),
+    ("ar", "ماذا نفعل إذا توقف القطاع الثانوي؟", "السيناريو"),
+])
+def test_assistant_returns_localized_secondary_four_stage_plan(recommendation_client, language, question, expected):
+    response = recommendation_client.post("/api/assistant/query", json={"question": question, "language": language})
+    assert response.status_code == 200, response.text
+    body = response.json(); assert expected in body["answer"]
+    assert body["intent"] == "secondary_sector_response"
+    assert {item["time_horizon"] for item in body["recommendation_plan"]["recommendations"]} == {"immediate", "stabilization", "recovery", "structural"}
+    assert all(value["indicator_name"] for value in body["values_used"])

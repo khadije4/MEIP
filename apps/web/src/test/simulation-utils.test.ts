@@ -1,0 +1,3 @@
+import { calculateSingleSectorShock } from '../utils/simulation'
+it('calculates a single-sector direct shock',()=>{expect(calculateSingleSectorShock({baselineGdp:400,sectorValue:80,shockRate:.5})).toEqual({directLoss:40,simulatedGdp:360,directImpactPercentage:10,remainingSectorValue:40,unaffectedGdp:320})})
+it('rejects invalid, missing and non-finite inputs',()=>{expect(()=>calculateSingleSectorShock({baselineGdp:0,sectorValue:1,shockRate:.5})).toThrow();expect(()=>calculateSingleSectorShock({baselineGdp:100,sectorValue:null,shockRate:.5})).toThrow();expect(()=>calculateSingleSectorShock({baselineGdp:100,sectorValue:120,shockRate:.5})).toThrow();expect(()=>calculateSingleSectorShock({baselineGdp:100,sectorValue:20,shockRate:1.2})).toThrow()})

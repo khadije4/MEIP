@@ -13,8 +13,8 @@ const definitions=[
 
 function CompositionTooltip({active,payload,label}:{active?:boolean;payload?:Array<{payload:CompositionRow;dataKey:string;value:number;color:string;name:string}>;label?:number}) {
   const c=useCopy(); if(!active||!payload?.length)return null
-  const total=payload.reduce((sum,item)=>sum+(Number(item.value)||0),0)
-  return <div className="rounded-xl border border-slate-200 bg-white/95 p-3 text-xs shadow-xl backdrop-blur"><p className="mb-2 font-black text-navy-900">{c('Année','السنة')} {label}</p>{payload.map(item=><div className="flex min-w-52 items-center justify-between gap-4 py-1" key={item.dataKey}><span style={{color:item.color}}>{item.name}</span><span className="tabular-nums">{Number(item.value).toLocaleString()} · {total?`${(Number(item.value)/total*100).toFixed(1)}%`:'—'}</span></div>)}</div>
+  const total=payload[0]?.payload.gdp??payload.reduce((sum,item)=>sum+(Number(item.payload[item.dataKey as keyof CompositionRow])||0),0)
+  return <div className="rounded-xl border border-slate-200 bg-white/95 p-3 text-xs shadow-xl backdrop-blur"><p className="mb-2 font-black text-navy-900">{c('Année','السنة')} {label}</p>{payload.map(item=>{const absolute=Number(item.payload[item.dataKey as keyof CompositionRow]);return <div className="flex min-w-52 items-center justify-between gap-4 py-1" key={item.dataKey}><span style={{color:item.color}}>{item.name}</span><span className="tabular-nums">{absolute.toLocaleString()} · {total?`${(absolute/total*100).toFixed(1)}%`:'—'}</span></div>})}</div>
 }
 
 export function GdpCompositionChart({data,selectedSector,selectedYear,onSelect}:{data:CompositionRow[];selectedSector:string;selectedYear:number;onSelect:(code:string)=>void}) {

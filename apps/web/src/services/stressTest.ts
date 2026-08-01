@@ -55,22 +55,21 @@ async function series(code:string) {
 }
 
 export async function loadSimulationPageData() {
-  const [indicatorResponse, gdp, primary, extractive, manufacturing, construction, tertiary] = await Promise.all([
-    api.get<Indicator[]>('/api/indicators'), series('gdp_activity_market_prices'),
-    series('primary_sector'),
-    series('extractive_activities'), series('manufacturing'),
-    series('construction_public_works'), series('tertiary_sector'),
-  ])
+  const codes=[...simulationSectorCodes]
+  const [indicatorResponse, gdp, ...sectorRows] = await Promise.all([api.get<Indicator[]>('/api/indicators'),series('gdp_activity_market_prices'),...codes.map(series)])
   const allowed = new Set<string>(simulationSectorCodes)
   const sectors = indicatorResponse.data.filter(item => allowed.has(item.code))
-  const maps = [gdp,primary,extractive,manufacturing,construction,tertiary].map(points => new Map(points.map(point => [point.year,point.value])))
-  const years = [...new Set(primary.map(point => point.year))].sort((a,b)=>a-b)
+  const seriesByCode=Object.fromEntries(codes.map((code,index)=>[code,sectorRows[index]])) as Record<string,Point[]>
+  const maps = [gdp,...['primary_sector','extractive_activities','manufacturing','construction_public_works','tertiary_sector'].map(code=>seriesByCode[code])].map(points => new Map(points.map(point => [point.year,point.value])))
+  const years = [...new Set(gdp.map(point => point.year))].sort((a,b)=>a-b)
   const composition:CompositionRow[] = years.map(year => ({
     year, gdp:maps[0].get(year)??null, primary_sector:maps[1].get(year)??null, extractive_activities:maps[2].get(year)??null,
     manufacturing:maps[3].get(year)??null, construction_public_works:maps[4].get(year)??null,
-    tertiary_sector:maps[5].get(year)??null,
+    tertiary_sector:[maps[0],maps[1],maps[2],maps[3],maps[4]].every(map=>map.get(year)!=null)
+      ? (maps[0].get(year) as number)-(maps[1].get(year) as number)-(maps[2].get(year) as number)-(maps[3].get(year) as number)-(maps[4].get(year) as number)
+      : null,
   }))
-  return { sectors, years, composition }
+  return { sectors, years, composition, gdpSeries:gdp, seriesByCode }
 }
 
 export async function simulateSingle(year:number, indicatorCode:string, shockPercent:number) {

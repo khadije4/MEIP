@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
+from app.schemas.recommendations import RecommendationResponse
 
 
 class AssistantQuery(BaseModel):
@@ -28,3 +29,4 @@ class AssistantAnswer(BaseModel):
     source: str = "ANSADE/CN"
     warnings: list[str] = []
     supported: bool = True
+    recommendation_plan: RecommendationResponse | None = None
