@@ -2,9 +2,12 @@ import { api } from './api'
 import type { Indicator, Point } from '../types/economic'
 
 export const simulationSectorCodes = [
-  'primary_sector', 'extractive_activities', 'manufacturing',
-  'construction_public_works', 'tertiary_sector', 'fishing', 'commerce',
-  'transport', 'secondary_sector',
+  'primary_sector','agriculture_forestry','livestock_hunting','fishing',
+  'secondary_sector','extractive_activities','oil_gas_extraction','non_oil_extractive_activities',
+  'metallic_mineral_extraction','snim_iron','gold_copper','other_extractive_activities',
+  'manufacturing','manufacturing_excluding_water_electricity','water_electricity','construction_public_works',
+  'tertiary_sector','transport_information_communication','transport','information_communication',
+  'commerce','other_services','public_administration',
 ] as const
 
 export type SimulationSectorCode = typeof simulationSectorCodes[number]

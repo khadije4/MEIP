@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { LanguageProvider, useLanguage } from '../contexts/LanguageContext'
-import { AssistantPage } from '../pages/InteractivePages'
+import { AssistantExperiencePage } from '../pages/AssistantExperiencePage'
 import { ResponseTimeline } from '../components/recommendations/ResponseTimeline'
 import type { Recommendation } from '../types/economic'
 
@@ -18,9 +18,9 @@ const item: Recommendation = {
 function LanguageToggle(){const {toggleLanguage}=useLanguage();return <button onClick={toggleLanguage}>العربية</button>}
 
 it('serves the Assistant component on direct /assistant navigation', () => {
-  render(<LanguageProvider><MemoryRouter initialEntries={['/assistant']}><Routes><Route path="assistant" element={<AssistantPage/>}/></Routes></MemoryRouter></LanguageProvider>)
+  render(<LanguageProvider><MemoryRouter initialEntries={['/assistant']}><Routes><Route path="assistant" element={<AssistantExperiencePage/>}/></Routes></MemoryRouter></LanguageProvider>)
   expect(screen.getByRole('heading',{level:1,name:'Assistant économique'})).toBeInTheDocument()
-  expect(screen.getByRole('button',{name:'Que faire si le secteur secondaire s’arrête ?'})).toBeInTheDocument()
+  expect(screen.getByRole('button',{name:'Interroger'})).toBeInTheDocument()
 })
 
 it('localizes recommendation metadata and keeps raw codes inside technical details', async () => {

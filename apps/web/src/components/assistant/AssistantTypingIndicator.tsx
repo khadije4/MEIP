@@ -1,0 +1,2 @@
+import { useCopy } from '../DataDisplay'
+export function AssistantTypingIndicator(){const c=useCopy();return <div data-testid="assistant-typing" role="status" aria-live="polite" className="mt-5 flex items-center gap-3 rounded-2xl border bg-white p-4"><span>{c('Analyse en cours…','جارٍ تحليل البيانات…')}</span><span aria-hidden="true" className="flex gap-1">{[0,1,2].map(i=><i className="h-2 w-2 animate-bounce rounded-full bg-mauritania-600 motion-reduce:animate-none" style={{animationDelay:`${i*120}ms`}} key={i}/>)}</span></div>}

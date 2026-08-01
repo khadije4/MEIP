@@ -10,7 +10,7 @@ export function KpiCard({ label, value, note, icon: Icon }: { label: string; val
 }
 
 export function Panel({ title, subtitle, children, className = '' }: { title: string; subtitle?: string; children: ReactNode; className?: string }) {
-  return <section className={`rounded-3xl border border-slate-200 bg-white p-5 shadow-card sm:p-6 ${className}`}><div className="mb-5"><h2 className="text-lg font-bold text-slate-950">{title}</h2>{subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}</div>{children}</section>
+  return <section className={`min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-card sm:p-6 ${className}`}><div className="mb-5"><h2 className="text-lg font-bold text-slate-950">{title}</h2>{subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}</div>{children}</section>
 }
 
 export function StatePanel({ state, title, description }: { state: 'loading' | 'error' | 'empty'; title: string; description: string }) {
@@ -21,4 +21,4 @@ export function WarningBanner({ title, children }: { title: string; children: Re
   return <aside className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950"><p className="font-bold">{title}</p><div className="mt-1 text-sm leading-6 text-amber-900/80">{children}</div></aside>
 }
 
-export function PageContainer({ children }: { children: ReactNode }) { return <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main> }
+export function PageContainer({ children }: { children: ReactNode }) { return <main className="mx-auto min-w-0 max-w-7xl overflow-x-clip px-4 py-8 sm:px-6 sm:py-10 lg:px-8">{children}</main> }

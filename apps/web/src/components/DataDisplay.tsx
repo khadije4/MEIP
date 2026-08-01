@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 
+// Shared localization hook intentionally lives beside the display primitives that consume it.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCopy() {
   const { language } = useLanguage()
   return (fr: string, ar: string) => language === 'ar' ? ar : fr
@@ -21,7 +23,7 @@ export function Metadata({ source='ANSADE/CN', unit='Millions de MRU' }: { sourc
 export function CurrentPriceWarning() { const c=useCopy(); return <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>{c('Prix courants : ','الأسعار الجارية: ')}</strong>{c('les variations sont nominales et ne mesurent pas la croissance réelle.','التغيرات اسمية ولا تقيس النمو الحقيقي.')}</div> }
 
 export function SelectField({ label, value, onChange, children, testId }: { label:string; value:string|number; onChange:(value:string)=>void; children:ReactNode; testId?:string }) {
-  return <label className="grid gap-1 text-sm font-semibold text-slate-700"><span>{label}</span><select data-testid={testId} className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal" value={value} onChange={event=>onChange(event.target.value)}>{children}</select></label>
+  return <label className="grid min-w-0 gap-1 text-sm font-semibold text-slate-700"><span>{label}</span><select data-testid={testId} className="min-h-11 min-w-0 w-full max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal" value={value} onChange={event=>onChange(event.target.value)}>{children}</select></label>
 }
 
 export function DataTable({ headers, rows }: { headers:string[]; rows:ReactNode[][] }) {
