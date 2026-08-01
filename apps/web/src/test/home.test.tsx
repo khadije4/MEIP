@@ -30,7 +30,7 @@ describe('Phase 4 frontend foundation', () => {
 
   it('keeps Phase 5 destinations explicit without presenting fake analytics', () => {
     renderRoute('/overview')
-    expect(screen.getByRole('heading', { level: 1, name: 'Vue d’ensemble' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Économie' })).toBeInTheDocument()
     expect(screen.getByText(/visualisations et interactions.*Phase 5/i)).toBeInTheDocument()
   })
 })

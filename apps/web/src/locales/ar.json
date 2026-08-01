@@ -1,6 +1,6 @@
 {
   "brand": { "name": "MEIP", "fullName": "منصة الذكاء الاقتصادي الموريتاني", "tagline": "من الحسابات الوطنية إلى قرارات أفضل" },
-  "nav": { "home": "الرئيسية", "overview": "نظرة عامة", "activity": "الأنشطة", "mining": "التعدين", "expenditure": "الإنفاق", "compare": "المقارنة", "reconciliation": "المطابقة", "alerts": "التنبيهات", "forecast": "التوقعات", "assistant": "المساعد", "stress": "المحاكاة والاستجابة", "reports": "التقارير", "catalogue": "فهرس البيانات", "more": "مزيد من التحليلات", "menu": "فتح القائمة", "close": "إغلاق القائمة" },
+  "nav": { "home": "الرئيسية", "overview": "الاقتصاد", "activity": "الأنشطة", "mining": "التعدين", "expenditure": "الإنفاق", "compare": "المقارنة", "reconciliation": "المطابقة", "alerts": "التنبيهات", "forecast": "التوقعات", "assistant": "المساعد", "stress": "محاكاة", "reports": "التقارير", "catalogue": "فهرس البيانات", "more": "مزيد من التحليلات", "menu": "فتح القائمة", "close": "إغلاق القائمة" },
   "language": { "label": "اللغة", "switchTo": "Français", "current": "العربية" },
   "home": {
     "eyebrow": "الحسابات الوطنية • 1998–2024",

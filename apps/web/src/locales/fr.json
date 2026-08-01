@@ -1,6 +1,6 @@
 {
   "brand": { "name": "MEIP", "fullName": "Plateforme d’intelligence économique de la Mauritanie", "tagline": "Des comptes nationaux à de meilleures décisions" },
-  "nav": { "home": "Accueil", "overview": "Vue d’ensemble", "activity": "Activité", "mining": "Mines", "expenditure": "Dépenses", "compare": "Comparer", "reconciliation": "Réconciliation", "alerts": "Alertes", "forecast": "Prévisions", "assistant": "Assistant", "stress": "Simulation et réaction", "reports": "Rapports", "catalogue": "Catalogue", "more": "Plus d’analyses", "menu": "Ouvrir le menu", "close": "Fermer le menu" },
+  "nav": { "home": "Accueil", "overview": "Économie", "activity": "Activité", "mining": "Mines", "expenditure": "Dépenses", "compare": "Comparer", "reconciliation": "Réconciliation", "alerts": "Alertes", "forecast": "Prévisions", "assistant": "Assistant", "stress": "Simuler", "reports": "Rapports", "catalogue": "Catalogue", "more": "Plus d’analyses", "menu": "Ouvrir le menu", "close": "Fermer le menu" },
   "language": { "label": "Langue", "switchTo": "العربية", "current": "Français" },
   "home": {
     "eyebrow": "Comptes nationaux • 1998–2024",
