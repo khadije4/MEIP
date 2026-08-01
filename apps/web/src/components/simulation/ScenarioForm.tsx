@@ -1,0 +1,14 @@
+import type { Indicator } from '../../types/economic'
+import { SelectField, useCopy } from '../DataDisplay'
+
+export function ScenarioForm({years,sectors,year,sectorCode,shockPercent,busy,onYear,onSector,onShock,onSimulate,onReset}:{years:number[];sectors:Indicator[];year:number;sectorCode:string;shockPercent:number;busy:boolean;onYear:(year:number)=>void;onSector:(code:string)=>void;onShock:(value:number)=>void;onSimulate:()=>void;onReset:()=>void}) {
+  const c=useCopy(); const clamp=(value:number)=>onShock(Math.min(100,Math.max(0,value)))
+  return <div className="grid gap-5">
+    <SelectField label={c('Année de référence','سنة الأساس')} value={year} onChange={value=>onYear(Number(value))} testId="simulation-year">{[...years].reverse().map(item=><option key={item} value={item}>{item}</option>)}</SelectField>
+    <SelectField label={c('Secteur affecté','القطاع المتأثر')} value={sectorCode} onChange={onSector} testId="simulation-sector">{sectors.map(item=><option value={item.code} key={item.code}>{c(item.name_fr,item.name_ar??item.name_fr)}</option>)}</SelectField>
+    <label className="grid gap-3 text-sm font-semibold text-slate-700"><span>{c('Baisse simulée','الانخفاض المحاكى')}: {shockPercent}% <span className="font-normal text-slate-400">({(shockPercent/100).toFixed(2)})</span></span><input data-testid="shock-slider" type="range" min="0" max="100" step="1" value={shockPercent} onChange={event=>clamp(Number(event.target.value))} className="accent-mauritania-700"/></label>
+    <label className="grid gap-1 text-sm font-semibold text-slate-700"><span>{c('Pourcentage exact','النسبة الدقيقة')}</span><div className="flex"><input aria-label={c('Pourcentage exact du choc','النسبة الدقيقة للصدمة')} type="number" min="0" max="100" step="1" value={shockPercent} onChange={event=>clamp(Number(event.target.value))} className="min-w-0 flex-1 rounded-s-xl border border-slate-300 px-3 py-2.5"/><span className="rounded-e-xl border border-s-0 border-slate-300 bg-slate-50 px-4 py-2.5">%</span></div></label>
+    <div className="flex flex-wrap gap-2" aria-label={c('Chocs prédéfinis','صدمات جاهزة')}>{[10,25,50,75,100].map(value=><button type="button" key={value} onClick={()=>onShock(value)} className={`rounded-full px-3 py-2 text-sm font-bold ${shockPercent===value?'bg-mauritania-700 text-white':'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{value}%</button>)}</div>
+    <div className="flex gap-3"><button type="button" disabled={busy} onClick={onSimulate} className="flex-1 rounded-xl bg-mauritania-700 px-5 py-3 font-bold text-white disabled:opacity-50">{busy?c('Simulation…','جارٍ المحاكاة…'):c('Simuler','محاكاة')}</button><button type="button" onClick={onReset} className="rounded-xl border border-slate-300 px-4 py-3 font-bold">{c('Réinitialiser','إعادة تعيين')}</button></div>
+  </div>
+}

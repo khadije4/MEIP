@@ -1,0 +1,22 @@
+import { ArrowUpRight, Database, Globe2, LineChart, Scale, ShieldCheck } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+
+const principles = [
+  ['realDataTitle', 'realDataText', Database],
+  ['bilingualTitle', 'bilingualText', Globe2],
+  ['transparentTitle', 'transparentText', LineChart],
+] as const
+
+export function Home() {
+  const { t } = useTranslation()
+  return <main>
+    <section className="relative isolate overflow-hidden border-b border-slate-200 bg-white"><div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_80%_15%,rgba(7,128,78,0.12),transparent_27%),radial-gradient(circle_at_12%_88%,rgba(217,172,71,0.13),transparent_26%)]"/><div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.15fr_.85fr] lg:px-8 lg:py-28">
+      <div className="max-w-3xl"><p className="inline-flex items-center gap-2 rounded-full border border-mauritania-100 bg-mauritania-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-mauritania-700"><ShieldCheck size={15}/>{t('home.eyebrow')}</p><h1 className="mt-6 text-balance text-4xl font-black leading-[1.08] tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-6xl">{t('home.title')}</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">{t('home.description')}</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link to="/overview" className="inline-flex items-center justify-center gap-2 rounded-full bg-mauritania-700 px-6 py-3.5 font-bold text-white shadow-lg shadow-mauritania-700/20 transition hover:bg-mauritania-600">{t('home.openDashboard')}<ArrowUpRight size={18}/></Link><Link to="/catalogue" className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3.5 font-bold text-slate-700 transition hover:border-mauritania-500 hover:text-mauritania-700">{t('home.exploreCatalogue')}</Link></div></div>
+      <div className="relative self-center"><div className="absolute -inset-5 -z-10 rotate-3 rounded-[2.25rem] bg-gradient-to-br from-mauritania-100 to-gold-400/20"/><div className="rounded-[2rem] border border-white bg-slate-950 p-6 text-white shadow-2xl sm:p-8"><div className="flex items-center justify-between border-b border-white/10 pb-5"><span className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">Mauritania / موريتانيا</span><Scale className="text-gold-400"/></div><dl className="mt-5 space-y-5"><div><dt className="text-xs uppercase tracking-wider text-slate-400">{t('home.sourceLabel')}</dt><dd className="mt-1.5 font-semibold">{t('home.sourceValue')}</dd></div><div><dt className="text-xs uppercase tracking-wider text-slate-400">{t('home.periodLabel')}</dt><dd className="mt-1.5 font-semibold">{t('home.periodValue')}</dd></div><div><dt className="text-xs uppercase tracking-wider text-slate-400">{t('home.approachLabel')}</dt><dd className="mt-1.5 font-semibold">{t('home.approachValue')}</dd></div></dl><div className="mt-7 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4"><p className="font-bold text-amber-200">{t('home.warningTitle')}</p><p className="mt-1 text-sm leading-6 text-amber-50/80">{t('home.warningText')}</p></div></div></div>
+    </div></section>
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8"><div className="max-w-2xl"><h2 className="text-3xl font-black tracking-tight text-slate-950">{t('home.principlesTitle')}</h2><p className="mt-3 leading-7 text-slate-600">{t('home.principlesIntro')}</p></div><div className="mt-9 grid gap-5 md:grid-cols-3">{principles.map(([title,text,Icon]) => <article key={title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-card"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-mauritania-50 text-mauritania-700"><Icon size={21}/></span><h3 className="mt-5 text-lg font-bold text-slate-950">{t(`home.${title}`)}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{t(`home.${text}`)}</p></article>)}</div>
+      <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-[2rem] bg-mauritania-700 px-7 py-9 text-white sm:flex-row sm:items-center sm:px-10"><div><h2 className="text-2xl font-black">{t('home.ctaTitle')}</h2><p className="mt-2 max-w-2xl text-emerald-50/80">{t('home.ctaText')}</p></div><Link to="/overview" className="shrink-0 rounded-full bg-white px-5 py-3 font-bold text-mauritania-700 transition hover:bg-emerald-50">{t('home.openDashboard')}</Link></div>
+    </section>
+  </main>
+}
