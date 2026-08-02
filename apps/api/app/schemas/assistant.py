@@ -7,6 +7,8 @@ from app.schemas.recommendations import RecommendationResponse
 class AssistantQuery(BaseModel):
     question: str = Field(min_length=2, max_length=500)
     language: str | None = None
+    last_indicator_codes: list[str] = Field(default_factory=list)
+    last_year: int | None = None
 
 
 class EvidenceValue(BaseModel):

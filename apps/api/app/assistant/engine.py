@@ -12,7 +12,8 @@ from app.analytics.ratios import investment_rate, trade_balance
 from app.models.dataset import Dataset
 from app.schemas.assistant import AssistantAnswer, EvidenceValue
 from app.services.series import get_indicator_or_404, get_ok_series
-from app.services import recommendations
+from app.services import recommendations, stress_test
+from app.services.assistant_router import route_question
 
 
 def _norm(text: str) -> str:
@@ -43,11 +44,15 @@ def _evidence(db: Session, code: str, year: int, value: float, language: str) ->
         worksheet=dataset.worksheet_name if dataset else "", unit=ind.unit)
 
 
-def answer_question(db: Session, question: str, requested_language: str | None = None) -> AssistantAnswer:
+def answer_question(db: Session, question: str, requested_language: str | None = None, last_indicator_codes: list[str] | None = None, last_year: int | None = None) -> AssistantAnswer:
     language = _language(question, requested_language)
     q = _norm(question)
     years = [int(y) for y in re.findall(r"(?:19|20)\d{2}", q)]
-    year = years[0] if years else 2024
+    gdp_years = get_ok_series(db, "gdp_activity_market_prices")
+    year = years[0] if years else last_year if last_year in gdp_years else max(gdp_years)
+    routed = route_question(question)
+    follow_up = any(term in f" {q} " for term in (" sa "," son "," ce secteur "," celui "," celle "," هذا القطاع "," هو "))
+    resolved_indicators = routed.indicators or (tuple(last_indicator_codes or ()) if follow_up else ())
 
     def response(intent: str, answer_fr: str, answer_ar: str, evidence: list[EvidenceValue], calculation: str, warnings: list[str] | None = None):
         return AssistantAnswer(language=language, intent=intent, answer=answer_ar if language == "ar" else answer_fr,
@@ -138,4 +143,27 @@ def answer_question(db: Session, question: str, requested_language: str | None =
             side = "activité" if ev[0].source_side == "activity" else "dépense"
             return response("indicator_value", f"{ev[0].indicator_name} en {year}: {series[year]:,.2f} millions de MRU (table {side}).", f"بلغ {ev[0].indicator_name} سنة {year} مقدار {series[year]:,.2f} مليون أوقية جديدة.", ev, "direct imported observation")
 
-    return AssistantAnswer(language=language, intent="unsupported", answer="Je ne peux répondre qu'aux questions couvertes par les comptes nationaux importés." if language == "fr" else "لا يمكنني الإجابة إلا عن الأسئلة التي تغطيها بيانات الحسابات الوطنية المستوردة.", values_used=[], calculation="none", warnings=["No supported deterministic intent matched."], supported=False)
+    if "scenario" in routed.capabilities and resolved_indicators:
+        code=resolved_indicators[0]; percentages=[float(v.replace(",",".")) for v in re.findall(r"(\d+(?:[.,]\d+)?)\s*%",q)]
+        if not percentages:
+            indicator=get_indicator_or_404(db,code);label=(indicator.name_ar if language=="ar" else indicator.name_fr) or indicator.name_fr
+            return response("scenario_clarification",f"Quel niveau de choc souhaitez-vous appliquer à {label} ?",f"ما نسبة الصدمة التي تريد تطبيقها على {label}؟",[],"shock percentage required")
+        result=stress_test.multiple(db,year,[{"indicator_code":code,"shock_rate":percentages[0]/100}]);effect=result["individual_effects"][0]
+        ev=[_evidence(db,code,year,effect["sector_value"],language),_evidence(db,"gdp_activity_market_prices",year,result["baseline_activity_gdp"],language)]
+        return response("scenario",f"Base observée en {year}: PIB {result['baseline_activity_gdp']:,.2f} millions de MRU. Hypothèse utilisateur: baisse de {percentages[0]:.2f} % de {ev[0].indicator_name}. Perte comptable directe: {result['total_direct_loss']:,.2f}; PIB simulé: {result['simulated_gdp']:,.2f}, soit −{result['total_direct_gdp_impact_pct']:.2f} %.",f"الأساس المرصود سنة {year}: الناتج {result['baseline_activity_gdp']:,.2f} مليون أوقية. فرضية المستخدم: انخفاض {ev[0].indicator_name} بنسبة {percentages[0]:.2f}٪. الخسارة المحاسبية المباشرة {result['total_direct_loss']:,.2f}؛ والناتج المحاكى {result['simulated_gdp']:,.2f}، أي −{result['total_direct_gdp_impact_pct']:.2f}٪.",ev,"direct_loss = observed sector value × user percentage / 100",[stress_test.DISCLAIMER_AR if language=="ar" else stress_test.DISCLAIMER_FR])
+    if "comparison" in routed.capabilities and len(resolved_indicators)>=2:
+        codes=resolved_indicators[:2];series=[get_ok_series(db,code) for code in codes];common=sorted(set(series[0])&set(series[1]));chosen=years[-1] if years and years[-1] in common else common[-1]
+        ev=[_evidence(db,code,chosen,data[chosen],language) for code,data in zip(codes,series)]
+        return response("compare",f"En {chosen}, {ev[0].indicator_name} vaut {ev[0].value:,.2f} et {ev[1].indicator_name} {ev[1].value:,.2f} millions de MRU. La comparaison porte sur des valeurs nominales observées.",f"في {chosen} بلغت قيمة {ev[0].indicator_name} مقدار {ev[0].value:,.2f} وقيمة {ev[1].indicator_name} مقدار {ev[1].value:,.2f} مليون أوقية. المقارنة بين قيم اسمية مرصودة.",ev,"direct comparison of imported observations")
+    if resolved_indicators:
+        code=resolved_indicators[0];series=get_ok_series(db,code);chosen=year if year in series else max(series);ev=[_evidence(db,code,chosen,series[chosen],language)]
+        return response("indicator_value",f"{ev[0].indicator_name} en {chosen}: {series[chosen]:,.2f} millions de MRU, valeur observée à prix courants.",f"بلغ {ev[0].indicator_name} سنة {chosen} مقدار {series[chosen]:,.2f} مليون أوقية، وهي قيمة مرصودة بالأسعار الجارية.",ev,"direct imported observation")
+    if "dataset_overview" in routed.capabilities:
+        value=gdp_years[year]; ev=[_evidence(db,"gdp_activity_market_prices",year,value,language)]
+        return response("dataset_overview",f"Les données MEIP couvrent les comptes nationaux par activité et par dépense. La dernière année commune disponible est {year}; le PIB par activité y atteint {value:,.2f} millions de MRU.",f"تغطي بيانات MEIP الحسابات الوطنية حسب الأنشطة والإنفاق. وآخر سنة مشتركة متاحة هي {year}، وبلغ فيها الناتج حسب الأنشطة {value:,.2f} مليون أوقية جديدة.",ev,"latest valid imported observation",["Valeurs à prix courants; aucune valeur manquante n'est remplacée par zéro." if language=="fr" else "القيم بالأسعار الجارية ولا تستبدل القيم المفقودة بأصفار."])
+    if "methodology" in routed.capabilities or "general_economic_explanation" in routed.capabilities:
+        return response("methodology","Explication générale : MEIP distingue les observations importées, les calculs comptables directs et les prévisions expérimentales. Les données sont à prix courants; les valeurs manquantes restent indisponibles. Une simulation applique une hypothèse aux valeurs observées, tandis qu’une prévision estime une trajectoire future avec validation chronologique.","شرح عام: تميز منصة MEIP بين المشاهدات المستوردة والحسابات المحاسبية المباشرة والتوقعات التجريبية. البيانات بالأسعار الجارية وتظل القيم المفقودة غير متاحة. تطبق المحاكاة فرضية على القيم المرصودة، بينما يقدّر التوقع مساراً مستقبلياً مع تحقق زمني.",[],"general explanation; no MEIP statistic asserted")
+    missing_topics=("chomage","emploi","pauvrete","population","inflation","recettes fiscales","revenu des menages","البطالة","التشغيل","الفقر","السكان","التضخم")
+    if any(topic in q for topic in missing_topics):
+        return AssistantAnswer(language=language,intent="unsupported_data_request",answer=("Cette information n’est pas présente dans les comptes nationaux importés. MEIP ne peut donc pas la chiffrer sans l’inventer. Je peux toutefois analyser le PIB, les secteurs, le commerce extérieur ou l’impact comptable direct d’un choc lié à votre question." if language=="fr" else "هذه المعلومة غير موجودة في الحسابات الوطنية المستوردة، ولذلك لا تستطيع MEIP تقديرها رقمياً دون اختلاقها. ويمكنني بدلاً من ذلك تحليل الناتج أو القطاعات أو التجارة الخارجية أو الأثر المحاسبي المباشر لصدمة مرتبطة بسؤالك."),values_used=[],calculation="none",warnings=["Requested variable is absent from the imported dataset."],supported=False)
+    return AssistantAnswer(language=language, intent="unsupported", answer="Je n’ai pas trouvé assez d’éléments pour produire un chiffre fiable. Reformulez en précisant l’indicateur, la période ou le scénario; je peux aussi expliquer le concept sans l’attribuer aux données MEIP." if language == "fr" else "لم أجد عناصر كافية لإنتاج رقم موثوق. أعد صياغة السؤال مع تحديد المؤشر أو الفترة أو السيناريو، ويمكنني أيضاً شرح المفهوم دون نسبته إلى بيانات MEIP.", values_used=[], calculation="none", warnings=["No reliable data-grounded calculation could be selected."], supported=False)
