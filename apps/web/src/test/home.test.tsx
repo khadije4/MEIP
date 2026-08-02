@@ -10,19 +10,19 @@ function renderRoute(path = '/') {
   return render(<LanguageProvider><MemoryRouter initialEntries={[path]}><Routes><Route path="/" element={<Layout/>}><Route index element={<Home/>}/><Route path="overview" element={<FeaturePlaceholder/>}/></Route></Routes></MemoryRouter></LanguageProvider>)
 }
 
-describe('Phase 4 frontend foundation', () => {
-  it('renders the French home page, source, period, and current-price limitation', () => {
+describe('premium landing page', () => {
+  it('renders the French AI hero, CTA, and data guardrail', () => {
     renderRoute()
     expect(screen.getByRole('heading', { level: 1, name: /Comprendre l’économie mauritanienne/i })).toBeInTheDocument()
-    expect(screen.getByText(/ANSADE\/CN — tableaux 4\.9\.1 et 4\.9\.2/)).toBeInTheDocument()
-    expect(screen.getByText(/27 observations annuelles/)).toBeInTheDocument()
-    expect(screen.getByText(/ne mesurent ni la croissance réelle ni l’inflation/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Essayer l’assistant IA/i })).toHaveAttribute('href', '/assistant')
+    expect(screen.getByText(/années de données économiques/i)).toBeInTheDocument()
+    expect(screen.getByText(/Données traçables/i)).toBeInTheDocument()
   })
 
   it('switches to Arabic and applies RTL to the document', async () => {
     const user = userEvent.setup(); renderRoute()
     await user.click(screen.getByRole('button', { name: /العربية/ }))
-    expect(await screen.findByRole('heading', { level: 1, name: /فهم الاقتصاد الموريتاني/ })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /افهم اقتصاد موريتانيا/ })).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('lang', 'ar')
     expect(document.documentElement).toHaveAttribute('dir', 'rtl')
     expect(window.localStorage.getItem('meip-language')).toBe('ar')
